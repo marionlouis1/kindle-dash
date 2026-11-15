@@ -8,11 +8,13 @@ import { PLACE, describe, type Weather } from "./weather";
 export const WIDTH = 1236;
 export const HEIGHT = 1648;
 
-const asset = (...p: string[]) => path.join(process.cwd(), "assets", ...p);
+// Fonts and icons come straight from their npm packages (see next.config.mjs for tracing).
+const FONT_DIR = path.join(process.cwd(), "node_modules/@fontsource/inter/files");
+const ICON_DIR = path.join(process.cwd(), "node_modules/@tabler/icons/icons/outline");
 
 const fonts = [
-  { name: "Inter", weight: 400 as const, style: "normal" as const, data: readFileSync(asset("inter-latin-400-normal.woff")) },
-  { name: "Inter", weight: 600 as const, style: "normal" as const, data: readFileSync(asset("inter-latin-600-normal.woff")) },
+  { name: "Inter", weight: 400 as const, style: "normal" as const, data: readFileSync(path.join(FONT_DIR, "inter-latin-400-normal.woff")) },
+  { name: "Inter", weight: 600 as const, style: "normal" as const, data: readFileSync(path.join(FONT_DIR, "inter-latin-600-normal.woff")) },
 ];
 
 const iconCache = new Map<string, string>();
@@ -20,7 +22,7 @@ function iconSrc(name: string, stroke = 1.5) {
   const key = `${name}:${stroke}`;
   let src = iconCache.get(key);
   if (!src) {
-    const svg = readFileSync(asset("icons", `${name}.svg`), "utf8")
+    const svg = readFileSync(path.join(ICON_DIR, `${name}.svg`), "utf8")
       .replace(/currentColor/g, "#000")
       .replace(/stroke-width="[^"]*"/, `stroke-width="${stroke}"`);
     src = `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`;
