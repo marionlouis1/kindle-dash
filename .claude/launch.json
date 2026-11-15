@@ -1,0 +1,6 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    { "name": "kindle-dash", "runtimeExecutable": "npm", "runtimeArgs": ["run", "dev"], "port": 3210 }
+  ]
+}
