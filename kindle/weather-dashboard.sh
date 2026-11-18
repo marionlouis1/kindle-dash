@@ -19,7 +19,7 @@
 #   (no argument)  toggle on/off
 #   once           fetch and draw a single time
 
-URL="https://kindle-dash-nu.vercel.app/dash.png"
+URL="https://marionlouis1.github.io/kindle-dash/dash.png"
 INTERVAL=1800 # seconds between refreshes (30 minutes)
 
 FBINK="/mnt/us/libkh/bin/fbink"

@@ -1,0 +1,45 @@
+# Renders the dashboard image on a schedule and publishes it as a static file
+# on GitHub Pages, where the Kindle fetches it.
+name: Publish dashboard
+
+on:
+  schedule:
+    # Every 15 minutes, away from the top of the hour where GitHub's scheduler
+    # is busiest (runs can still start a few minutes late).
+    - cron: "7,22,37,52 * * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: [lib/**, scripts/**, package-lock.json, .github/workflows/pages.yml]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      # If the weather service is down this step fails and the previous image
+      # stays online.
+      - run: npm run render
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - id: deploy
+        uses: actions/deploy-pages@v4
