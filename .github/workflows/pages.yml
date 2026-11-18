@@ -39,6 +39,8 @@ jobs:
       # If the weather service is down this step fails and the previous image
       # stays online.
       - run: npm run render
+        env:
+          OPEN_METEO_BASE: https://kindle-dash-nu.vercel.app/open-meteo
       - uses: actions/upload-pages-artifact@v3
         with:
           path: site

@@ -2,6 +2,10 @@
 
 export const PLACE = { name: "Biarritz", lat: 43.4832, lon: -1.5586, tz: "Europe/Paris" };
 
+// Overridable so the GitHub Pages workflow can go through the Vercel relay
+// (see next.config.mjs).
+const API = process.env.OPEN_METEO_BASE ?? "https://api.open-meteo.com";
+
 export type Weather = {
   now: {
     temp: number;
@@ -20,7 +24,7 @@ export type Weather = {
 
 export async function getWeather(): Promise<Weather> {
   const url =
-    "https://api.open-meteo.com/v1/forecast" +
+    `${API}/v1/forecast` +
     `?latitude=${PLACE.lat}&longitude=${PLACE.lon}` +
     "&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m,wind_gusts_10m,relative_humidity_2m,is_day" +
     "&hourly=temperature_2m,precipitation_probability,weather_code,is_day" +
