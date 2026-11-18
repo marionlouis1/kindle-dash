@@ -4,9 +4,10 @@ name: Publish dashboard
 
 on:
   schedule:
-    # Every 15 minutes, away from the top of the hour where GitHub's scheduler
-    # is busiest (runs can still start a few minutes late).
-    - cron: "7,22,37,52 * * * *"
+    # Every 10 minutes, away from the top of the hour where GitHub's scheduler
+    # is busiest. GitHub starts scheduled runs late and sometimes skips them,
+    # so this asks more often than the Kindle fetches (every 30 minutes).
+    - cron: "3,13,23,33,43,53 * * * *"
   workflow_dispatch:
   push:
     branches: [main]
