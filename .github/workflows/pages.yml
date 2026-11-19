@@ -3,11 +3,12 @@
 name: Publish dashboard
 
 on:
+  # GitHub's scheduler turned out to start only a couple of runs a day for this
+  # repo, so the workflow keeps itself going instead: the "next" job below
+  # waits, then starts the following run. This hourly schedule is only a safety
+  # net that restarts the chain if it ever breaks.
   schedule:
-    # Every 10 minutes, away from the top of the hour where GitHub's scheduler
-    # is busiest. GitHub starts scheduled runs late and sometimes skips them,
-    # so this asks more often than the Kindle fetches (every 30 minutes).
-    - cron: "3,13,23,33,43,53 * * * *"
+    - cron: "23 * * * *"
   workflow_dispatch:
   push:
     branches: [main]
@@ -54,3 +55,37 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh api -X PUT "repos/${{ github.repository }}/actions/workflows/pages.yml/enable"
+
+  # Starts the following run after a pause. Runs even when publishing failed
+  # (weather service down), so one bad run does not stop the updates.
+  next:
+    needs: publish
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 70
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - name: Wait
+        run: |
+          # The Kindle fetches every 30 minutes; a new image every 15 keeps it
+          # fresh. At night (23:00-07:00 in Paris) one an hour is plenty.
+          hour=$(TZ=Europe/Paris date +%-H)
+          if [ "$hour" -ge 23 ] || [ "$hour" -lt 7 ]; then
+            sleep 3300
+          else
+            sleep 780
+          fi
+      - name: Start the next run
+        run: |
+          # Only the newest run carries the chain on. If a later run (a push,
+          # the hourly schedule) is already going, it will do it, and this one
+          # stops; otherwise the chains would multiply.
+          newer=$(gh run list --workflow pages.yml --limit 20 --json number,status \
+            --jq "[.[] | select(.number > ${{ github.run_number }} and .status != \"completed\")] | length")
+          if [ "$newer" -gt 0 ]; then
+            echo "A newer run is active; leaving the chain to it."
+          else
+            gh workflow run pages.yml --ref main
+          fi
